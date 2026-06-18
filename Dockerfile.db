@@ -1,0 +1,21 @@
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN sed -i 's|http://.*.ubuntu.com|http://mirrors.aliyun.com|g' /etc/apt/sources.list \
+    && apt-get update \
+    && apt-get install -y mysql-server \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /var/lib/mysql/*
+
+RUN mkdir -p /run/mysqld && chown -R mysql:mysql /run/mysqld /var/lib/mysql
+
+COPY docker/mysql/mysql.cnf /etc/mysql/conf.d/mysql.cnf
+COPY docker/mysql/entrypoint.sh /usr/local/bin/mysql-entrypoint.sh
+COPY docker/mysql/init.sql /docker-entrypoint-initdb.d/init.sql
+
+RUN chmod +x /usr/local/bin/mysql-entrypoint.sh
+
+EXPOSE 3306
+
+ENTRYPOINT ["/usr/local/bin/mysql-entrypoint.sh"]
