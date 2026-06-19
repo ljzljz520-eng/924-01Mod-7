@@ -1,9 +1,10 @@
 <?php
 require_once __DIR__ . '/../includes/template_repo.php';
+require_once __DIR__ . '/../includes/editor_repo.php';
 require_once __DIR__ . '/../includes/helpers.php';
 
 $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
-$template = $id ? get_template($id) : null;
+$template = $id ? get_template_with_regions($id) : null;
 
 if (!$template) {
     header('Location: /');
@@ -11,6 +12,7 @@ if (!$template) {
 }
 
 $images = format_preview_images($template['preview_images']);
+$isEditable = !empty($template['source_image']) && !empty(array_filter($template['editable_regions'], fn($r) => $r['is_editable']));
 ?>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -76,6 +78,20 @@ $images = format_preview_images($template['preview_images']);
         <div class="detail-section">
             <h2>详细说明</h2>
             <p style="white-space:pre-wrap;"><?php echo e($template['article']); ?></p>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($isEditable): ?>
+        <div class="detail-section" style="background:linear-gradient(135deg,rgba(37,99,235,0.08),rgba(16,185,129,0.08));border:2px solid var(--accent);">
+            <h2 style="margin:0 0 12px;">🎨 支持在线编辑</h2>
+            <p style="margin:0 0 16px;color:var(--muted);">在浏览器内修改标题、主题色和二维码位置，实时预览效果。购买后可下载高清无水印原图。</p>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <a class="btn btn-primary" href="/editor.php?id=<?php echo $template['id']; ?>" style="padding:12px 28px;font-size:1rem;">✨ 开始在线编辑</a>
+                <span style="display:inline-flex;align-items:center;gap:6px;padding:10px 14px;background:rgba(16,185,129,0.1);color:var(--accent-2);border-radius:999px;font-weight:600;font-size:0.9rem;">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                    可编辑区域：<?php echo count(array_filter($template['editable_regions'], fn($r) => $r['is_editable'])); ?> 处
+                </span>
+            </div>
         </div>
     <?php endif; ?>
 

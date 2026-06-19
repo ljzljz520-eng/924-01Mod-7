@@ -1,9 +1,18 @@
 <?php
 require_once __DIR__ . '/../includes/template_repo.php';
+require_once __DIR__ . '/../includes/editor_repo.php';
+require_once __DIR__ . '/../includes/campaign_repo.php';
 require_once __DIR__ . '/../includes/helpers.php';
 
 $keyword = isset($_GET['q']) ? trim($_GET['q']) : null;
 $templates = fetch_templates($keyword);
+$active_campaigns = fetch_campaigns(true);
+
+foreach ($templates as &$tpl) {
+    $tpl['editable_regions'] = get_editable_regions($tpl['id']);
+    $tpl['is_editable'] = !empty($tpl['source_image']) && !empty(array_filter($tpl['editable_regions'], fn($r) => $r['is_editable']));
+}
+unset($tpl);
 ?>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -36,11 +45,57 @@ $templates = fetch_templates($keyword);
     </div>
 </header>
 
+<?php if (!empty($active_campaigns)): ?>
+<section class="campaign-section">
+    <div class="campaign-header">
+        <h2 class="campaign-title">🎁 限时活动专题</h2>
+        <p class="campaign-subtitle">精选节日专属模板，限时呈现</p>
+    </div>
+    <div class="campaign-grid">
+        <?php foreach ($active_campaigns as $camp): ?>
+            <?php
+                $days_left = floor((strtotime($camp['end_date']) - time()) / 86400);
+                $camp_templates = get_campaign_templates($camp['id']);
+                $cover = $camp['cover_image'] ?: 'https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=800&q=80';
+            ?>
+            <a href="/campaign.php?slug=<?php echo e($camp['slug']); ?>" class="campaign-card" style="--theme-color: <?php echo e($camp['theme_color']); ?>;">
+                <div class="campaign-cover">
+                    <img src="<?php echo e($cover); ?>" alt="<?php echo e($camp['name']); ?>">
+                    <div class="campaign-overlay"></div>
+                    <div class="campaign-badge">
+                        <?php if ($days_left > 0): ?>
+                            仅剩 <?php echo e($days_left); ?> 天
+                        <?php else: ?>
+                            今天最后一天
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <div class="campaign-body">
+                    <h3><?php echo e($camp['name']); ?></h3>
+                    <p><?php echo e(mb_substr($camp['description'] ?? '', 0, 50)); ?><?php echo mb_strlen($camp['description'] ?? '') > 50 ? '...' : ''; ?></p>
+                    <div class="campaign-meta">
+                        <span class="campaign-count"><?php echo e(count($camp_templates)); ?> 款精选素材</span>
+                        <span class="campaign-arrow">立即查看 →</span>
+                    </div>
+                </div>
+            </a>
+        <?php endforeach; ?>
+    </div>
+</section>
+<?php endif; ?>
+
 <main class="main">
     <div class="grid">
         <?php foreach ($templates as $tpl): $images = format_preview_images($tpl['preview_images']); ?>
             <article class="card">
-                <img src="<?php echo e($images[0] ?? 'https://images.unsplash.com/photo-1481277542470-605612bd2d61?auto=format&fit=crop&w=1200&q=80'); ?>" alt="<?php echo e($tpl['title']); ?> 预览图">
+                <div style="position:relative;">
+                    <img src="<?php echo e($images[0] ?? 'https://images.unsplash.com/photo-1481277542470-605612bd2d61?auto=format&fit=crop&w=1200&q=80'); ?>" alt="<?php echo e($tpl['title']); ?> 预览图">
+                    <?php if ($tpl['is_editable']): ?>
+                        <span style="position:absolute;top:10px;right:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;padding:4px 10px;border-radius:999px;font-size:0.75rem;font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,0.2);">
+                            ✨ 可在线编辑
+                        </span>
+                    <?php endif; ?>
+                </div>
                 <div class="card-body">
                     <h3><?php echo e($tpl['title']); ?></h3>
                     <p><?php echo e($tpl['description']); ?></p>
@@ -50,7 +105,11 @@ $templates = fetch_templates($keyword);
                         <?php endforeach; ?>
                     </div>
                     <div class="card-actions">
-                        <a class="btn btn-primary" style="flex:1; text-align:center;" href="<?php echo e($tpl['download_url']); ?>" target="_blank" rel="noopener">免费下载</a>
+                        <?php if ($tpl['is_editable']): ?>
+                            <a class="btn btn-primary" style="flex:1; text-align:center;" href="/editor.php?id=<?php echo e($tpl['id']); ?>">✨ 在线编辑</a>
+                        <?php else: ?>
+                            <a class="btn btn-primary" style="flex:1; text-align:center;" href="<?php echo e($tpl['download_url']); ?>" target="_blank" rel="noopener">免费下载</a>
+                        <?php endif; ?>
                         <a class="btn btn-ghost" style="flex:1; text-align:center;" href="/detail.php?id=<?php echo e($tpl['id']); ?>">进入详情</a>
                     </div>
                 </div>

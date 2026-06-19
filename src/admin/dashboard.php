@@ -31,6 +31,7 @@ $templates = fetch_templates();
             <p class="muted">已登录：<?php echo e($_SESSION['admin_username'] ?? ''); ?></p>
         </div>
         <div style="display:flex;gap:10px;">
+            <a class="btn btn-ghost" href="/admin/campaigns.php">专题管理</a>
             <a class="btn btn-ghost" href="/">返回前台</a>
             <a class="btn btn-primary" href="/admin/edit.php">新增模板</a>
             <a class="btn btn-ghost" href="/admin/logout.php">退出登录</a>

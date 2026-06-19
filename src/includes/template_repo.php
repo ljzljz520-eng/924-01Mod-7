@@ -30,7 +30,7 @@ function upsert_template(array $data, ?int $id = null): void
     $imagesJson = json_encode($images, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
     if ($id === null) {
-        $stmt = $pdo->prepare('INSERT INTO templates (title, description, article, preview_images, download_url, tags) VALUES (:t, :d, :a, :p, :u, :g)');
+        $stmt = $pdo->prepare('INSERT INTO templates (title, description, article, preview_images, download_url, tags, source_image, canvas_width, canvas_height) VALUES (:t, :d, :a, :p, :u, :g, :src, :cw, :ch)');
         $stmt->execute([
             ':t' => $data['title'] ?? '',
             ':d' => $data['description'] ?? '',
@@ -38,9 +38,12 @@ function upsert_template(array $data, ?int $id = null): void
             ':p' => $imagesJson,
             ':u' => $data['download_url'] ?? '',
             ':g' => $data['tags'] ?? '',
+            ':src' => $data['source_image'] ?? '',
+            ':cw' => (int) ($data['canvas_width'] ?? 800),
+            ':ch' => (int) ($data['canvas_height'] ?? 600),
         ]);
     } else {
-        $stmt = $pdo->prepare('UPDATE templates SET title=:t, description=:d, article=:a, preview_images=:p, download_url=:u, tags=:g WHERE id=:id');
+        $stmt = $pdo->prepare('UPDATE templates SET title=:t, description=:d, article=:a, preview_images=:p, download_url=:u, tags=:g, source_image=:src, canvas_width=:cw, canvas_height=:ch WHERE id=:id');
         $stmt->execute([
             ':t' => $data['title'] ?? '',
             ':d' => $data['description'] ?? '',
@@ -48,6 +51,9 @@ function upsert_template(array $data, ?int $id = null): void
             ':p' => $imagesJson,
             ':u' => $data['download_url'] ?? '',
             ':g' => $data['tags'] ?? '',
+            ':src' => $data['source_image'] ?? '',
+            ':cw' => (int) ($data['canvas_width'] ?? 800),
+            ':ch' => (int) ($data['canvas_height'] ?? 600),
             ':id' => $id,
         ]);
     }

@@ -181,6 +181,32 @@ if (!empty($form_data)) {
             <input name="tags" placeholder="企业,响应式" value="<?php echo e($display_data['tags'] ?? ''); ?>">
         </div>
         
+        <div class="images-section">
+            <label>🎨 在线编辑配置（可选）</label>
+            <div class="hint">配置后用户可在浏览器内编辑文字、颜色和二维码位置</div>
+            
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:12px;">
+                <div>
+                    <label style="font-weight:normal;font-size:0.95rem;">源图URL（高清原图）</label>
+                    <input name="source_image" placeholder="https://..." value="<?php echo e($display_data['source_image'] ?? ''); ?>">
+                </div>
+                <div>
+                    <label style="font-weight:normal;font-size:0.95rem;">画布宽度 (px)</label>
+                    <input name="canvas_width" type="number" placeholder="800" value="<?php echo e($display_data['canvas_width'] ?? 800); ?>">
+                </div>
+                <div>
+                    <label style="font-weight:normal;font-size:0.95rem;">画布高度 (px)</label>
+                    <input name="canvas_height" type="number" placeholder="1200" value="<?php echo e($display_data['canvas_height'] ?? 1200); ?>">
+                </div>
+            </div>
+            
+            <?php if ($id): ?>
+                <div style="margin-top:12px;">
+                    <a class="btn btn-ghost" href="/admin/regions.php?template_id=<?php echo $id; ?>">⚙️ 管理可编辑区域</a>
+                </div>
+            <?php endif; ?>
+        </div>
+        
         <div style="display:flex;gap:10px;justify-content:flex-end;">
             <a class="btn btn-ghost" href="/admin/dashboard.php">取消</a>
             <button class="btn btn-primary" type="submit">保存</button>
