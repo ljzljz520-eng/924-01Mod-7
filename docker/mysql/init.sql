@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS templates (
   article TEXT,
   preview_images TEXT,
   source_image VARCHAR(255),
+  canvas_width INT DEFAULT 800,
+  canvas_height INT DEFAULT 600,
   download_url VARCHAR(255) NOT NULL,
   tags VARCHAR(255),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

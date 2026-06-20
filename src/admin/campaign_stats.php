@@ -23,8 +23,8 @@ foreach ($template_stats as $ts) {
     $template_stat_map[$ts['template_id']] = $ts;
 }
 
-$conversion_rate = $stats['total_views'] > 0 ? round(($stats['total_downloads'] / $stats['total_views']) * 100, 2) : 0;
-$ctr = $stats['total_views'] > 0 ? round(($stats['total_clicks'] / $stats['total_views']) * 100, 2) : 0;
+$clicks_per_view = $stats['total_views'] > 0 ? round($stats['total_clicks'] / $stats['total_views'], 2) : 0;
+$conversion_rate = $stats['total_clicks'] > 0 ? round(($stats['total_downloads'] / $stats['total_clicks']) * 100, 2) : 0;
 ?>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -71,12 +71,17 @@ $ctr = $stats['total_views'] > 0 ? round(($stats['total_clicks'] / $stats['total
         <div class="stat-card">
             <div class="label">总浏览量（PV）</div>
             <div class="value"><?php echo e(number_format($stats['total_views'])); ?></div>
-            <div class="change">专题页面浏览次数</div>
+            <div class="change">专题页面被访问次数</div>
         </div>
         <div class="stat-card">
-            <div class="label">总点击数</div>
+            <div class="label">素材总点击</div>
             <div class="value"><?php echo e(number_format($stats['total_clicks'])); ?></div>
-            <div class="change">素材点击进入详情次数</div>
+            <div class="change">用户从专题点击进入素材详情次数</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">人均素材点击</div>
+            <div class="value"><?php echo e($clicks_per_view); ?></div>
+            <div class="change">平均每次浏览点击素材数</div>
         </div>
         <div class="stat-card">
             <div class="label">总下载数</div>
@@ -84,14 +89,9 @@ $ctr = $stats['total_views'] > 0 ? round(($stats['total_clicks'] / $stats['total
             <div class="change">通过专题产生的下载量</div>
         </div>
         <div class="stat-card">
-            <div class="label">点击率（CTR）</div>
-            <div class="value"><?php echo e($ctr); ?>%</div>
-            <div class="change">点击数 / 浏览量</div>
-        </div>
-        <div class="stat-card">
-            <div class="label">转化率</div>
+            <div class="label">点击→下载转化率</div>
             <div class="value"><?php echo e($conversion_rate); ?>%</div>
-            <div class="change">下载数 / 浏览量</div>
+            <div class="change">下载数 / 素材点击数</div>
         </div>
     </div>
 
@@ -117,22 +117,20 @@ $ctr = $stats['total_views'] > 0 ? round(($stats['total_clicks'] / $stats['total
             <tr>
                 <th>ID</th>
                 <th>素材名称</th>
-                <th>浏览量</th>
                 <th>点击数</th>
                 <th>下载数</th>
-                <th>转化率</th>
+                <th>点击→下载转化率</th>
             </tr>
         </thead>
         <tbody>
             <?php foreach ($templates as $tpl): ?>
                 <?php
-                    $ts = $template_stat_map[$tpl['id']] ?? ['total_views' => 0, 'total_clicks' => 0, 'total_downloads' => 0];
-                    $tpl_conv = $ts['total_views'] > 0 ? round(($ts['total_downloads'] / $ts['total_views']) * 100, 2) : 0;
+                    $ts = $template_stat_map[$tpl['id']] ?? ['total_clicks' => 0, 'total_downloads' => 0];
+                    $tpl_conv = $ts['total_clicks'] > 0 ? round(($ts['total_downloads'] / $ts['total_clicks']) * 100, 2) : 0;
                 ?>
                 <tr>
                     <td><?php echo e($tpl['id']); ?></td>
                     <td><?php echo e($tpl['title']); ?></td>
-                    <td><?php echo e(number_format($ts['total_views'])); ?></td>
                     <td><?php echo e(number_format($ts['total_clicks'])); ?></td>
                     <td><?php echo e(number_format($ts['total_downloads'])); ?></td>
                     <td><?php echo e($tpl_conv); ?>%</td>
@@ -140,7 +138,7 @@ $ctr = $stats['total_views'] > 0 ? round(($stats['total_clicks'] / $stats['total
             <?php endforeach; ?>
             <?php if (empty($templates)): ?>
                 <tr>
-                    <td colspan="6" style="text-align:center;padding:30px;color:#94a3b8;">该专题暂无素材</td>
+                    <td colspan="5" style="text-align:center;padding:30px;color:#94a3b8;">该专题暂无素材</td>
                 </tr>
             <?php endif; ?>
         </tbody>
